@@ -1,0 +1,309 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Engine;
+using Engine.Input;
+using System.Windows.Forms;
+using System.Drawing;
+using Tao.OpenGl;
+using Button = Engine.Button;
+using Color = Engine.Color;
+//using Font = Engine.Font;
+
+namespace Chinesse_Chess
+{
+    class Level
+    {
+        MoveChessManager _moveChessManager = new MoveChessManager(new RectangleF(-1300 / 2, -750 / 2, 1300, 750));
+        Input _input;
+        PersistantGameData _gameData;
+        ChessBoard _chessBoard;
+        TextureManager _textureManager;
+        EffectsManager _effectsManager;
+        Background _background;
+        Background _backgroundLayer;
+        bool isEnd = true;
+        //List<Enemy> _enemyList = new List<Enemy>();
+        AnimatedSprite _testSprite = new AnimatedSprite();
+        public static byte[,] m_ChessBoard = new byte[10, 9];
+
+        Engine.Font _generalFont;
+        Engine.Font _titleFont;
+        //Input _menuinput;
+        VerticalMenu _optionmenu;
+        VerticalMenu _enginemenu;
+
+        Renderer _renderer = new Renderer();
+        Text _optiontitle;
+        StateSystem _system;
+        //EnemyManager _enemyManager;
+        public Level(Input input, TextureManager textureManager, PersistantGameData gameData, Engine.Font generalFont, Engine.Font titleFont)
+        {
+            //_testSprite.Texture = textureManager.Get("explosion");
+            //_testSprite.SetAnimation(4, 4);
+
+            _input = input;
+            _gameData = gameData;
+            _textureManager = textureManager;
+            _effectsManager = new EffectsManager(_textureManager);
+
+            _background = new Background(textureManager.Get("background"));
+            //_background.Speed = 0.15f;
+            _background.SetScale(2.0, 2.0);
+
+            //_backgroundLayer = new Background(textureManager.Get("background_layer_1"));
+            //_backgroundLayer.Speed = 0.1f;
+            //_backgroundLayer.SetScale(2.0, 2.0);
+            m_ChessBoard = Form1.InitChessBoard;
+            _chessBoard = new ChessBoard(_textureManager, _moveChessManager);
+
+            //_system = system;
+
+            //_input = input;
+            _generalFont = generalFont;
+            _titleFont = titleFont;
+            OptionMenu();
+            _optiontitle = new Text("选项", _titleFont);
+            _optiontitle.SetColor(new Color(0, 0, 0, 1));
+            // Center on the x and place somewhere near the top
+            _optiontitle.SetPosition(-_optiontitle.Width / 2 - 450, 300);
+
+            EngineMenu();
+            _optiontitle = new Text("引擎", _titleFont);
+            _optiontitle.SetColor(new Color(0, 0, 0, 1));
+            // Center on the x and place somewhere near the top
+            _optiontitle.SetPosition(-_optiontitle.Width / 2 + 450, 300);
+            //_enemyManager = new EnemyManager(_textureManager, _effectsManager, _bulletManager, _playerCharacter, -1300);
+        }
+
+        private void OptionMenu()
+        {
+            _optionmenu = new VerticalMenu(-450, 150, _input, 30);
+            Button player = new Button(
+                delegate (object o, EventArgs e)
+                {
+                    ///<remarks>正式开始游戏</remarks>
+                    //_system.ChangeState("inner_game");
+                },
+                new Text("玩家先行", _generalFont));
+
+            Button computer = new Button(
+                delegate (object o, EventArgs e)
+                {
+                    ///<remarks>退出</remarks>
+                    //System.Windows.Forms.Application.Exit();
+                },
+                new Text("电脑先行", _generalFont));
+            ///<remarks>添加菜单</remarks>
+            _optionmenu.AddButton(player);
+            _optionmenu.AddButton(computer);
+        }
+        private void EngineMenu()
+        {
+            _enginemenu = new VerticalMenu(450, 150, _input, 30);
+            Button Negamax = new Button(
+                delegate (object o, EventArgs e)
+                {
+                    ///<remarks>正式开始游戏</remarks>
+                    //_system.ChangeState("inner_game");
+                },
+                new Text("负极大值引擎", _generalFont));
+
+            Button AlphaBeta = new Button(
+                delegate (object o, EventArgs e)
+                {
+                    ///<remarks>退出</remarks>
+                    //System.Windows.Forms.Application.Exit();
+                },
+                new Text("AlphaBeta剪枝搜索引擎", _generalFont));
+            Button FSAB = new Button(
+                delegate (object o, EventArgs e)
+                {
+                    ///<remarks>正式开始游戏</remarks>
+                    //_system.ChangeState("inner_game");
+                },
+                new Text("Fail-Soft AlphaBeta剪枝搜索引擎", _generalFont));
+
+            Button Aspiration = new Button(
+                delegate (object o, EventArgs e)
+                {
+                    ///<remarks>退出</remarks>
+                    //System.Windows.Forms.Application.Exit();
+                },
+                new Text("渴望搜索引擎", _generalFont));
+            Button PVS = new Button(
+                delegate (object o, EventArgs e)
+                {
+                    ///<remarks>正式开始游戏</remarks>
+                    //_system.ChangeState("inner_game");
+                },
+                new Text("极小窗口搜索引擎", _generalFont));
+
+            Button IDA = new Button(
+                delegate (object o, EventArgs e)
+                {
+                    ///<remarks>退出</remarks>
+                    //System.Windows.Forms.Application.Exit();
+                },
+                new Text("迭代深化AlphaBeta搜索引擎", _generalFont));
+            Button ATT = new Button(
+                delegate (object o, EventArgs e)
+                {
+                    ///<remarks>正式开始游戏</remarks>
+                    //_system.ChangeState("inner_game");
+                },
+                new Text("AlphaBeta剪枝+置换表搜索引擎", _generalFont));
+
+            Button AHH = new Button(
+                delegate (object o, EventArgs e)
+                {
+                    ///<remarks>退出</remarks>
+                    //System.Windows.Forms.Application.Exit();
+                },
+                new Text("Alphabeta剪枝+历史启发搜索引擎", _generalFont));
+            Button Mdtf = new Button(
+                delegate (object o, EventArgs e)
+                {
+                    ///<remarks>正式开始游戏</remarks>
+                    //_system.ChangeState("inner_game");
+                },
+                new Text("Mdt(f)搜索引擎", _generalFont));
+
+            Button NTTHH = new Button(
+                delegate (object o, EventArgs e)
+                {
+                    ///<remarks>退出</remarks>
+                    //System.Windows.Forms.Application.Exit();
+                },
+                new Text("NegaScout+置换表+历史启发", _generalFont));
+            ///<remarks>添加菜单</remarks>
+            _enginemenu.AddButton(Negamax);
+            _enginemenu.AddButton(AlphaBeta);
+            _enginemenu.AddButton(FSAB);
+            _enginemenu.AddButton(Aspiration);
+            _enginemenu.AddButton(PVS);
+            _enginemenu.AddButton(IDA);
+            _enginemenu.AddButton(ATT);
+            _enginemenu.AddButton(AHH);
+            _enginemenu.AddButton(Mdtf);
+            _enginemenu.AddButton(NTTHH);
+        }
+
+        private void UpdateCollisions()
+        {
+            //_bulletManager.UpdatePlayerCollision(_playerCharacter);
+            //foreach (Enemy enemy in _enemyManager.EnemyList)
+            //{
+            //    if (enemy.GetBoundingBox().IntersectsWith(_playerCharacter.GetBoundingBox()))
+            //    {
+            //        enemy.OnCollision(_playerCharacter);
+            //        _playerCharacter.OnCollision(enemy);
+            //    }
+
+            //    _bulletManager.UpdateEnemyCollisions(enemy);
+            //}
+        }
+
+        public bool HasPlayerDied()
+        {
+            return _chessBoard.IsDead;
+        }
+
+        public void Update(double elapsedTime, double gameTime)
+        {
+            //_testSprite.Update(elapsedTime);
+            //UpdateCollisions();
+            _moveChessManager.Update(elapsedTime);
+            //提供和控制游戏玩家
+            double _x = _input.Controller.LeftControlStick.X;
+            double _y = _input.Controller.LeftControlStick.Y * -1;
+            Vector controlInput = new Vector(_x, _y, 0);
+
+            if (Math.Abs(controlInput.Length()) < 0.0001)
+            {
+                //如果游戏角色输入非常小，哪可能不是用摇杆控制，而是用键盘控制
+                if (_input.Keyboard.IsKeyHeld(Keys.Left))
+                {
+                    controlInput.X = -1;
+                }
+
+                if (_input.Keyboard.IsKeyHeld(Keys.Right))
+                {
+                    controlInput.X = 1;
+                }
+
+                if (_input.Keyboard.IsKeyHeld(Keys.Up))
+                {
+                    controlInput.Y = 1;
+                }
+
+                if (_input.Keyboard.IsKeyHeld(Keys.Down))
+                {
+                    controlInput.Y = -1;
+                }
+            }
+            _effectsManager.Update(elapsedTime);
+            //_chessBoard.Move(controlInput * elapsedTime);
+            _chessBoard.Update(elapsedTime);
+            _background.Update((float)elapsedTime);
+            
+            //_backgroundLayer.Update((float)elapsedTime);
+            //_enemyList.ForEach(x => x.Update(elapsedTime));
+            //_enemyManager.Update(elapsedTime, gameTime);
+            //在这个方法里面处理输入
+            UpdateInput(elapsedTime);
+        }
+
+        public void Update(double elapsedTime)
+        {
+            _optionmenu.HandleInput();
+            _enginemenu.HandleInput();
+        }
+
+        private void UpdateInput(double elapsedTime)
+        {
+            
+            if ((_input.Keyboard.IsKeyPressed(Keys.Space) || _input.Controller.ButtonA.Pressed) && isEnd == true)
+            {                
+                _chessBoard.Restart();
+                isEnd = false;
+            }
+
+            if (_input.Keyboard.IsKeyPressed(Keys.Enter))
+            {
+                _chessBoard.End();
+                isEnd = true;
+            }
+        }
+
+        public void Render(Renderer renderer)
+        {
+            _background.Render(renderer);
+            //_backgroundLayer.Render(renderer);
+
+            //_enemyList.ForEach(x => x.Render(renderer));
+            //_enemyManager.Render(renderer);
+            _chessBoard.Render(renderer);
+            _moveChessManager.Render(renderer);
+
+            
+
+            renderer.DrawSprite(_testSprite);
+            renderer.Render();
+            _effectsManager.Render(renderer);
+            renderer.Render();
+        }
+
+        public void Render()
+        {
+            //Gl.glClearColor(1, 1, 1, 0);
+            //Gl.glClear(Gl.GL_COLOR_BUFFER_BIT);
+            _renderer.DrawText(_optiontitle);
+            _optionmenu.Render(_renderer);
+            _enginemenu.Render(_renderer);
+            _renderer.Render();
+        }
+    }
+}

@@ -1,0 +1,78 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Engine;
+using Engine.Input;
+using Tao.OpenGl;
+
+
+namespace Chinesse_Chess
+{
+    class InnerGameState : IGameObject
+    {
+        Renderer _renderer = new Renderer();
+        Input _input;
+        StateSystem _system;
+        PersistantGameData _gameData;
+        Font _generalFont;
+        Font _titleFont;
+
+        double _gameTime;
+        Level _level;
+        TextureManager _textureManager;
+
+        public InnerGameState(StateSystem system, Input input, TextureManager textureManager, PersistantGameData gameData, Font generalFont, Font titleFont )
+        {
+            _input = input;
+            _system = system;
+            _gameData = gameData;
+            _generalFont = generalFont;
+            _textureManager = textureManager;
+            _titleFont = titleFont;
+            OnGameStart();
+        }
+
+        public void OnGameStart()
+        {
+            _level = new Level(_input, _textureManager, _gameData, _generalFont, _titleFont);
+            _gameTime = _gameData.CurrentLevel.Time;
+        }
+
+        #region IGameObject Members
+
+        public void Update(double elapsedTime)
+        {
+            _level.Update(elapsedTime, _gameTime);
+            _level.Update(elapsedTime);
+            _gameTime -= elapsedTime;
+
+            //if(_gameTime <= 0)
+            //{
+            //    OnGameStart();
+            //    _gameData.JustWon = true;
+            //    ///<remarks>游戏终了</remarks>
+            //    _system.ChangeState("game_over");
+            //}
+
+            if (_level.HasPlayerDied())
+            {
+                OnGameStart();
+                _gameData.JustWon = false;
+                ///<remarks>游戏终了</remarks>
+                _system.ChangeState("game_over");
+            }
+        }
+
+        public void Render()
+        {
+            Gl.glClearColor(1, 0, 1, 0);
+            Gl.glClear(Gl.GL_COLOR_BUFFER_BIT);
+            _level.Render(_renderer);
+            _level.Render();
+            _renderer.Render();
+        }
+        #endregion
+    }
+}

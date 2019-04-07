@@ -1,0 +1,28 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Engine.Input;
+
+namespace Engine
+{
+    public class RadioHorizontalMenu : HorizontalMenu
+    {
+        public RadioHorizontalMenu(double x, double y, Input.Input input, int hspacing = 60) : base(x, y, input, hspacing)
+        {
+        }
+
+        protected override void OnButtonPress()
+        {
+            if (_buttons.Exists(t => t._checked == true))
+            {
+                Button temp = _buttons[_buttons.FindIndex(t => t._checked == true)];
+                temp._checked = false;
+                temp.OnLoseFocus();
+            }
+            _buttons[_currentFocus]._checked = true;
+            _buttons[_currentFocus].OnPress();
+        }
+    }
+}

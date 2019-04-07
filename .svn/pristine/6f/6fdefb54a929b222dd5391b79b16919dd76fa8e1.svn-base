@@ -1,0 +1,88 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Engine;
+using Tao.OpenGl;
+using Engine.Input;
+
+namespace Chinesse_Chess
+{
+    class StartMenuState : IGameObject
+    {
+        Engine.Font _generalFont;
+        Input _input;
+        VerticalMenu _menu;
+
+        Renderer _renderer = new Renderer();
+        Text _title;
+        StateSystem _system;
+        TextureManager _textureManager;
+        EffectsManager _effectsManager;
+        Background _backgroundLayer;
+
+        public StartMenuState(Engine.Font titleFont, Engine.Font generalFont, Input input, StateSystem system, TextureManager textureManager)
+        {
+            _system = system;
+
+            _input = input;
+            _generalFont = generalFont;
+            _textureManager = textureManager;
+            _effectsManager = new EffectsManager(_textureManager);
+            InitializeMenu();
+            _backgroundLayer = new Background(textureManager.Get("background_layer_1"));
+            //_background.Speed = 0.15f;
+            _backgroundLayer.SetScale(4.0, 3.0);
+            _title = new Text("中国象棋", titleFont);
+            _title.SetColor(new Color(0, 0, 0, 1));
+            // Center on the x and place somewhere near the top
+            _title.SetPosition(-_title.Width / 2, 300);
+        }
+
+        private void InitializeMenu()
+        {
+            _menu = new VerticalMenu(0, 150, _input);
+            Button startGame = new Button(
+                delegate (object o, EventArgs e)
+                {
+                    ///<remarks>正式开始游戏</remarks>
+                    _system.ChangeState("inner_game");
+                },
+                new Text("开始", _generalFont));
+
+            Button exitGame = new Button(
+                delegate (object o, EventArgs e)
+                {
+                    ///<remarks>退出</remarks>
+                    System.Windows.Forms.Application.Exit();
+                },
+                new Text("退出", _generalFont));
+            ///<remarks>添加菜单</remarks>
+            _menu.AddButton(startGame);
+            _menu.AddButton(exitGame);
+        }
+
+        public void Update(double elapsedTime)
+        {
+            _menu.HandleInput();
+            _effectsManager.Update(elapsedTime);
+        }
+
+        public void Render(Renderer renderer)
+        {
+            _backgroundLayer.Render(renderer);            
+        }
+
+        public void Render()
+        {
+            //Gl.glClearColor(0, 1, 1, 0);
+            //_backgroundLayer.Render(renderer);
+            //Gl.glClear(Gl.GL_COLOR_BUFFER_BIT);
+            this.Render(_renderer);
+            _renderer.DrawText(_title);
+            _menu.Render(_renderer);
+            _renderer.Render();
+        }
+    }
+}

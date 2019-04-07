@@ -1,0 +1,28 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Engine.Input;
+
+namespace Engine
+{
+    public class RadioVerticalMenu : VerticalMenu
+    {
+        public RadioVerticalMenu(double x, double y, Input.Input input, int vspacing = 30) : base(x, y, input, vspacing)
+        {
+        }
+
+        protected override void OnButtonPress()
+        {
+            if (_buttons.Exists(t => t._checked == true))
+            {
+                Button temp = _buttons[_buttons.FindIndex(t => t._checked == true)];
+                temp._checked = false;
+                temp.OnLoseFocus();
+            }
+            _buttons[_currentFocus]._checked = true;
+            _buttons[_currentFocus].OnPress();
+        }
+    }
+}
